@@ -10,7 +10,7 @@
 #     netmask Y.Y.Y.Y
 #     post-up /etc/network/mirror-up.sh;:
  
-source_if=eth0
+source_if=ens192
 dest_if=br0
  
 # enable the destination port
