@@ -1,37 +1,34 @@
 source /etc/network/interfaces.d/*
+
 auto lo
 iface lo inet loopback
- 
-# The primary network interface
+
+# Management network interface
 auto ens192
-iface ens192 inet static
-address 192.168.2.75
-netmask 255.255.255.224
-gateway 192.168.2.65
-dns-nameservers 8.8.8.8
- 
-# physical mirror port toward collector
+iface en192 inet static
+  address 192.168.2.75
+  gateway 192.168.2.65
+  netmask 255.255.255.224
+  dns-nameservers 8.8.8.8 8.8.4.4
+
+auto ens192
+iface ens192 inet manual
+  up ip link set ens192 promisc on arp off up
+  down ip link set ens192 promisc off down
+  post-up ethtool -G ens192 rx ; for i in rx tx sg tso ufo gso gro lro; do ethtool -K ens192 $i off; done
+  post-up echo 1 > /proc/sys/net/ipv6/conf/eth0/disable_ipv6
+
 auto ens224
-iface ens224 inet static
-address 127.1.1.1
-netmask 255.255.255.255
-up ip addr del 127.1.1.1/32 dev ens224;:
- 
-# always-up mirror port toward dev null
-auto dummy0
-iface dummy0 inet static
-address 127.4.4.4
-netmask 255.255.255.255
-pre-up modprobe dummy;:
-up ip addr del 127.4.4.4/32 dev dummy0;:
- 
-# bridge of eth1 and dummy0
-# this is so that it always stays up, even if eth1 is down
+iface ens224 inet manual
+  up ip link set ens224 promisc on arp off up
+  down ip link set ens224 promisc off down
+  post-up ethtool -G ens224 rx ; for i in rx tx sg tso ufo gso gro lro; do ethtool -K ens224 $i off; done
+  post-up echo 1 > /proc/sys/net/ipv6/conf/eth2/disable_ipv6
+
 auto br0
-iface br0 inet static
-bridge_ports ens224 dummy0
-address 127.5.5.5
-netmask 255.255.255.255
-up ip addr del 127.5.5.5/32 dev br0;:
-post-up /etc/network/mirror-up.sh;:
-pre-down /etc/network/mirror-down.sh;:
+iface br0 inet manual
+  bridge_ports ens192 ens224
+  up ip link set br0 promisc on arp off up
+  down ip link set br0 promisc off down
+  post-up ethtool -G br0 rx ; for i in rx tx sg tso ufo gso gro lro; do ethtool -K br0 $i off; done
+  post-up echo 1 > /proc/sys/net/ipv6/conf/br0/disable_ipv6
