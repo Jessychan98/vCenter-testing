@@ -10,7 +10,7 @@
 #     netmask Y.Y.Y.Y
 #     pre-down /etc/network/mirror-down.sh;:
  
-source_if=eth0
+source_if=ens192
  
 # de-provision ingress mirroring
 tc qdisc del dev $source_if ingress;:
